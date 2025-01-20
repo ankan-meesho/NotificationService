@@ -11,6 +11,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 
@@ -35,6 +36,7 @@ public class KafkaServices {
         this.phoneServices = phoneServices;
     }
 
+    @Async
     public boolean sendMessage(String message) {
         try{
             kafkaTemplate.send(AppConstant.TOPIC_NAME, message);

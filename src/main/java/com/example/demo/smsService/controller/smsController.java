@@ -65,7 +65,7 @@ public class smsController {
         return ResponseEntity.ok(obj.toString());
     }
 
-
+//    Just for debugging
     @GetMapping("/els/{id}")
     public phoneEntity test(@PathVariable String id) {
         return phoneServices.getphone(id);
