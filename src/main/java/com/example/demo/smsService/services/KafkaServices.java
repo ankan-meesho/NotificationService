@@ -36,7 +36,7 @@ public class KafkaServices {
         this.phoneServices = phoneServices;
     }
 
-    @Async
+//    @Async
     public boolean sendMessage(String message) {
         try{
             kafkaTemplate.send(AppConstant.TOPIC_NAME, message);
@@ -54,8 +54,8 @@ public class KafkaServices {
 
 
     @KafkaListener(topics = AppConstant.TOPIC_NAME,groupId = AppConstant.GROUP_ID)
-    public String receiveMessage(String message) throws InterruptedException {
-        System.out.printf("Received Message: %s\n", message);
+    public void receiveMessage(String message) {
+        logger.info("Received Message: " + message);
         message=message.substring(1,message.length()-1);
 
         smsEntity smsEntity= smsRepository.findById(message).orElse(null);
@@ -64,11 +64,17 @@ public class KafkaServices {
                 if(apiService.start(smsEntity.getMessage(),smsEntity.getPhone_number(),AppConstant.MOCK_API_KEY)){
                     smsEntity.setStatus("API Called Successfully");
                     smsRepository.save(smsEntity);
-                    phoneEntity elasticDoc=new phoneEntity();
-                    elasticDoc.setPhoneNumber(smsEntity.getPhone_number());
-                    elasticDoc.setMessage(smsEntity.getMessage());
-                    elasticDoc.setSentDate(smsEntity.getUpdated_at());
-                    phoneServices.create(elasticDoc);
+                    try{
+                        phoneEntity elasticDoc=new phoneEntity();
+                        elasticDoc.setPhoneNumber(smsEntity.getPhone_number());
+                        elasticDoc.setMessage(smsEntity.getMessage());
+                        elasticDoc.setSentDate(smsEntity.getUpdated_at());
+                        phoneServices.create(elasticDoc);
+                    }
+                    catch (Exception e){
+                        logger.error(e.getMessage());
+                        throw new RuntimeException("Error in saving data in Elastic search");
+                    }
                 }
                 else {
                     smsEntity.setStatus("API Called Failed");
@@ -77,9 +83,9 @@ public class KafkaServices {
                 }
         }
         else {
-            return "Phone Number is Not Found";
+            logger.error("Sms Details Not Found, Message received: " + message);
+            throw new RuntimeException("Sms Details Not Found");
         }
-        return null;
     }
 
 

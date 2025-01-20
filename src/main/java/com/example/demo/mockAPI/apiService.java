@@ -13,8 +13,11 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class apiService {
     Random rand = new Random();
-    public boolean start(String message,String phone,String header) throws InterruptedException {
-        TimeUnit.SECONDS.sleep(5);
+    public boolean start(String message,String phone,String header) {
+//        TimeUnit.SECONDS.sleep(5);
+        /**
+         * MOCK API RANDOMLY FAILS
+         **/
         if(header == AppConstant.MOCK_API_KEY){
             if(rand.nextInt(20)%5==0){
                 System.out.println("Failed");
