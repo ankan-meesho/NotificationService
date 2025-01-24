@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @RestController
@@ -26,11 +27,12 @@ import java.util.Objects;
 public class smsController {
 
     Logger logger= LoggerFactory.getLogger(smsController.class);
+    @Autowired
     public com.example.demo.smsService.services.smsServices smsServices;
     @Autowired
     private final phoneServices phoneServices;
 
-    public smsController(smsServices smsServices, KafkaServices kafkaServices, smsRepository smsRepository, com.example.demo.smsService.services.phoneServices phoneServices) {
+    public smsController(smsServices smsServices,phoneServices phoneServices) {
         this.smsServices = smsServices;
         this.phoneServices = phoneServices;
     }
@@ -52,10 +54,10 @@ public class smsController {
     @GetMapping("/{request_id}")
     public ResponseEntity<String> getSms(@PathVariable String request_id) {
         smsDTO response= smsServices.getDetailsById(request_id);
-        if(Objects.equals(response.getStatus(), "404")){
+        if(response==null){
             JSONObject obj=new JSONObject();
-            obj.put("code",response.getFaliure_code());
-            obj.put("comment",response.getFaliure_comment());
+            obj.put("code","INVALID_REQUEST");
+            obj.put("comment","request_id not found");
             return ResponseEntity.status(404).body(obj.toString());
         }
         JSONObject obj=new JSONObject();
@@ -72,15 +74,23 @@ public class smsController {
     }
 
     @PostMapping("/find_from_sms")
-    public List<phoneEntity> find(@RequestBody requestType message) {
-        System.out.printf("message: %s\n", message.getMessage());
-        return phoneServices.getAllPhoneContainingMessage(message.getMessage());
+    public List<Map<String, Object>> find(@RequestBody requestType message) {
+        try{
+            return phoneServices.getAllPhoneContainingMessage(message.getMessage(), message.getPageNumber(), message.getPageSize());
+        }
+        catch (Exception e){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
 
     @PostMapping("/find_all_sms_from_phone")
-    public List<phoneEntity> find_phone(@RequestBody requestType message) {
-        int page=1;
-        int size=2;
-        return phoneServices.getAllPhoneMessage(message.getPhone(), message.getStartime(), message.getEndtime(),page,size);
+    public List<Map<String, Object>> find_phone(@RequestBody requestType message) {
+        try{
+            return phoneServices.getAllPhoneMessage(message.getPhone(), message.getStartime(), message.getEndtime(), message.getPageNumber(), message.getPageSize());
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
 }

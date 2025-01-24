@@ -1,7 +1,7 @@
 package com.example.demo.smsService.services;
 
 
-import com.example.demo.smsService.controller.smsController;
+import com.example.demo.smsService.services.serviceInterface.smsServicesInt;
 import com.example.demo.utils.ApiResponse;
 import com.example.demo.smsService.dto.smsDTO;
 import com.example.demo.smsService.entity.smsEntity;
@@ -21,7 +21,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Service
-public class smsServices {
+public class smsServices implements smsServicesInt {
     @Autowired
     private final com.example.demo.smsService.repository.smsRepository smsRepository;
     @Autowired
@@ -45,10 +45,14 @@ public class smsServices {
      * @param smsDTO
      * @return
      */
+    @Override
     public ApiResponse sendSms(smsDTO smsDTO) {
         String regexStr = "^[1-9][0-9]{9}$";
+        if(smsDTO.getPhone_number()==null || smsDTO.getPhone_number().isEmpty()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Phone number is required");
+        }
         if(Pattern.matches(regexStr,smsDTO.getPhone_number())){
-            if(smsDTO.getMessage().isEmpty()){
+            if(smsDTO.getMessage()==null || smsDTO.getMessage().isEmpty()){
                 logger.error("Message is null or empty");
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Message cannot be empty");
             }
@@ -94,6 +98,7 @@ public class smsServices {
 
 
 
+    @Override
     public smsDTO getDetailsById(String id) {
         Optional<smsEntity> smsEntity = smsRepository.findById(id);
         if(smsEntity.isPresent()){
@@ -102,7 +107,7 @@ public class smsServices {
         }
         else{
             logger.error("Couldn't find id "+id);
-            return new smsDTO(null,null,null,"404","INVALID_REQUEST","request_id not found",null,null);
+            return null;
         }
     }
 

@@ -12,4 +12,6 @@ public class requestType {
     private String phone;
     private String startime;
     private String endtime;
+    private Integer pageNumber;
+    private Integer pageSize;
 }
