@@ -5,6 +5,7 @@ import com.example.demo.smsService.services.serviceInterface.phoneServicesInt;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.search.SearchHit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
 import org.springframework.http.HttpStatus;
@@ -29,13 +30,10 @@ public class phoneServices implements phoneServicesInt {
     @Autowired
     private final phoneRepository phoneRepository;
     @Autowired
-    private final ElasticsearchTemplate elasticsearchTemplate;
-    @Autowired
     private final RestHighLevelClient restHighLevelClient;
 
     public phoneServices(phoneRepository phoneRepository, ElasticsearchTemplate elasticsearchTemplate, RestHighLevelClient restHighLevelClient) {
         this.phoneRepository = phoneRepository;
-        this.elasticsearchTemplate = elasticsearchTemplate;
         this.restHighLevelClient = restHighLevelClient;
     }
     @Override
@@ -126,7 +124,7 @@ public class phoneServices implements phoneServicesInt {
         SearchResponse response= restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
 
         List<Map<String, Object>> results = new ArrayList<>();
-        for(org.elasticsearch.search.SearchHit hits:response.getHits()){
+        for(SearchHit hits:response.getHits()){
             results.add(hits.getSourceAsMap());
         }
 

@@ -15,7 +15,7 @@ import java.util.Set;
 
 
 @Service
-public class blacklistService {
+public class blacklistService implements blacklistServiceInt {
 
     Logger logger= LoggerFactory.getLogger(blacklistService.class);
 
@@ -23,6 +23,7 @@ public class blacklistService {
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
 
+    @Override
     public boolean savePhone(String phone) {
         try{
             redisTemplate.opsForValue().set(phone,phone);
@@ -35,6 +36,7 @@ public class blacklistService {
         }
     }
 
+    @Override
     public List<String> findAll() {
         try{
             Set<String> keys = redisTemplate.keys("*");
@@ -53,6 +55,7 @@ public class blacklistService {
     }
 
 
+    @Override
     public void delete(String phone) {
         if(redisTemplate.opsForValue().get(phone)==null){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Phone Not Found");

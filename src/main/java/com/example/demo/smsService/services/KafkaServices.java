@@ -44,6 +44,7 @@ public class KafkaServices {
             return true;
         }
         catch (Exception e){
+            kafkaTemplate.send(AppConstant.TOPIC_NAME_FAILED, message);
             logger.error(e.getMessage());
             System.out.println(e);
             return false;
@@ -53,7 +54,7 @@ public class KafkaServices {
 
 
 
-    @KafkaListener(topics = AppConstant.TOPIC_NAME,groupId = AppConstant.GROUP_ID)
+    @KafkaListener(topics = {AppConstant.TOPIC_NAME,AppConstant.TOPIC_NAME_FAILED},groupId = AppConstant.GROUP_ID)
     public void receiveMessage(String message) {
         logger.info("Received Message: " + message);
         message=message.substring(1,message.length()-1);
@@ -65,6 +66,12 @@ public class KafkaServices {
                     smsEntity.setStatus("API Called Successfully");
                     smsRepository.save(smsEntity);
                     try{
+                        if(smsEntity.getFaliure_code()!=null) {
+                            smsEntity.setFaliure_code(null);
+                            smsEntity.setFaliure_comment(null);
+                            smsEntity.setStatus("API Called Successfully in Retry");
+                            smsRepository.save(smsEntity);
+                        }
                         phoneEntity elasticDoc=new phoneEntity();
                         elasticDoc.setPhoneNumber(smsEntity.getPhone_number());
                         elasticDoc.setMessage(smsEntity.getMessage());
@@ -77,8 +84,10 @@ public class KafkaServices {
                     }
                 }
                 else {
+                    kafkaTemplate.send(AppConstant.TOPIC_NAME_FAILED, message);
                     smsEntity.setStatus("API Called Failed");
                     smsEntity.setFaliure_code("500");
+                    smsEntity.setFaliure_comment("API Error Retry...");
                     smsRepository.save(smsEntity);
                 }
         }
