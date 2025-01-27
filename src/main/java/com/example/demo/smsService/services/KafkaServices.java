@@ -23,12 +23,10 @@ public class KafkaServices {
     private final com.example.demo.smsService.repository.smsRepository smsRepository;
     @Autowired
     private final com.example.demo.smsService.services.phoneServices phoneServices;
-
-
-    Logger logger= LoggerFactory.getLogger(KafkaServices.class);
     @Autowired
     private com.example.demo.mockAPI.apiService apiService;
 
+    Logger logger= LoggerFactory.getLogger(KafkaServices.class);
 
     public KafkaServices(KafkaTemplate<String, String> kafkaTemplate, com.example.demo.smsService.repository.smsRepository smsRepository, com.example.demo.smsService.services.phoneServices phoneServices) {
         this.kafkaTemplate = kafkaTemplate;
@@ -46,7 +44,6 @@ public class KafkaServices {
         catch (Exception e){
             kafkaTemplate.send(AppConstant.TOPIC_NAME_FAILED, message);
             logger.error(e.getMessage());
-            System.out.println(e);
             return false;
         }
 

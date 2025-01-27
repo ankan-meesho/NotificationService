@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -74,23 +75,13 @@ public class smsController {
     }
 
     @PostMapping("/find_from_sms")
-    public List<Map<String, Object>> find(@RequestBody requestType message) {
-        try{
-            return phoneServices.getAllPhoneContainingMessage(message.getMessage(), message.getPageNumber(), message.getPageSize());
-        }
-        catch (Exception e){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
+    public List<Map<String, Object>> find(@RequestBody requestType message) throws IOException {
+        return phoneServices.getAllPhoneContainingMessage(message.getMessage(), message.getPageNumber(), message.getPageSize());
+
     }
 
     @PostMapping("/find_all_sms_from_phone")
-    public List<Map<String, Object>> find_phone(@RequestBody requestType message) {
-        try{
-            return phoneServices.getAllPhoneMessage(message.getPhone(), message.getStartime(), message.getEndtime(), message.getPageNumber(), message.getPageSize());
-        }
-        catch (Exception e){
-            e.printStackTrace();
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
+    public List<Map<String, Object>> find_phone(@RequestBody requestType message) throws IOException {
+        return phoneServices.getAllPhoneMessage(message.getPhone(), message.getStartime(), message.getEndtime(), message.getPageNumber(), message.getPageSize());
     }
 }

@@ -26,9 +26,11 @@ public class blacklistController {
 
     @PostMapping
     public ResponseEntity<Map<String,String>> addBlacklist(@RequestBody requestType phoneNumbers) {
-        try{
             String regexStr = "^[1-9][0-9]{9}$";
             for(String phoneNumber: phoneNumbers.getBlacklistPhoneNumber()) {
+                if(phoneNumber==null || phoneNumber.isEmpty()){
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Field Can't be Empty or Null");
+                }
                 if(Pattern.matches(regexStr, phoneNumber)) {
                     if(!blacklistService.savePhone(phoneNumber)){
                         throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Error saving phone number");
@@ -41,11 +43,6 @@ public class blacklistController {
             Map<String, String> response=new HashMap<>();
             response.put("data","Successfully added blacklist");
             return ResponseEntity.ok(response);
-        }
-        catch(Exception e){
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
-        }
-
     }
 
     @GetMapping

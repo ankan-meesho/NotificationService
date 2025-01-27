@@ -45,10 +45,11 @@ public class blacklistService implements blacklistServiceInt {
                 String phoneNumber = redisTemplate.opsForValue().get(key);
                 phoneNumbers.add(phoneNumber);
             }
+            logger.info("Numbers is Successfully blacklisted");
             return phoneNumbers;
         }
         catch (Exception e){
-            logger.error("Error retriving Phone Number "+e.getMessage());
+            logger.error("Error retrieving Phone Number "+e.getMessage());
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,e.getMessage());
         }
 
@@ -56,11 +57,17 @@ public class blacklistService implements blacklistServiceInt {
 
 
     @Override
-    public void delete(String phone) {
+    public void delete(String phone){
         if(redisTemplate.opsForValue().get(phone)==null){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Phone Not Found");
         }
+        try{
             redisTemplate.delete(phone);
+        }
+        catch (Exception e){
+            logger.error("Error deleting Phone "+e.getMessage());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,e.getMessage());
+        }
     }
 
 

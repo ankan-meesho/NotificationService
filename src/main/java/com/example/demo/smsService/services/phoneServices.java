@@ -7,7 +7,6 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.search.SearchHit;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import com.example.demo.smsService.repository.phoneRepository;
@@ -32,7 +31,7 @@ public class phoneServices implements phoneServicesInt {
     @Autowired
     private final RestHighLevelClient restHighLevelClient;
 
-    public phoneServices(phoneRepository phoneRepository, ElasticsearchTemplate elasticsearchTemplate, RestHighLevelClient restHighLevelClient) {
+    public phoneServices(phoneRepository phoneRepository, RestHighLevelClient restHighLevelClient) {
         this.phoneRepository = phoneRepository;
         this.restHighLevelClient = restHighLevelClient;
     }
@@ -58,12 +57,17 @@ public class phoneServices implements phoneServicesInt {
 
     @Override
     public phoneEntity getphone(String id){
-        Optional<phoneEntity> response = phoneRepository.findById(id);
-        if(response.isPresent()){
-            System.out.printf("Response from Kafka Service: %s\n",response);
-            return response.orElse(new phoneEntity());
+        try {
+            Optional<phoneEntity> response = phoneRepository.findById(id);
+            if (response.isPresent()) {
+                System.out.printf("Response from Kafka Service: %s\n", response);
+                return response.orElse(new phoneEntity());
+            } else
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
-        else return null;
+        catch(Exception e){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
 
     @Override
@@ -102,6 +106,10 @@ public class phoneServices implements phoneServicesInt {
         String regexStr = "^[1-9][0-9]{9}$";
         if(phone==null || phone.isEmpty() ||!Pattern.matches(regexStr, phone) || startTime==null || endTime==null || endTime.isEmpty() || startTime.isEmpty()){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Query");
+        }
+
+        if(pageNumber<1 || pageSize<1){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Page number/Page Size cannot be less than 1");
         }
 
 
