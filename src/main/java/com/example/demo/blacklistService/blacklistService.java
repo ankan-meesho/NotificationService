@@ -25,6 +25,9 @@ public class blacklistService implements blacklistServiceInt {
 
     @Override
     public boolean savePhone(String phone) {
+        if(checkPhone(phone)){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Phone number already blacklisted");
+        }
         try{
             redisTemplate.opsForValue().set(phone,phone);
             logger.info("Number is Successfully blacklisted");
@@ -55,10 +58,14 @@ public class blacklistService implements blacklistServiceInt {
 
     }
 
+    public boolean checkPhone(String phone) {
+        return redisTemplate.opsForValue().get(phone) != null;
+    }
+
 
     @Override
     public void delete(String phone){
-        if(redisTemplate.opsForValue().get(phone)==null){
+        if(!checkPhone(phone)){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Phone Not Found");
         }
         try{

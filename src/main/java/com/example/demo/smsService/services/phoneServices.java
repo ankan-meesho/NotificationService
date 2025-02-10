@@ -18,6 +18,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +76,9 @@ public class phoneServices implements phoneServicesInt {
         if(message==null || message.isEmpty()){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Message cannot be null or empty");
         }
+        if(pageNumber<1 || pageSize<1){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Page number/Page Size cannot be less than 1");
+        }
 
         int from = (pageNumber - 1) * pageSize;
         SearchRequest searchRequest=new SearchRequest("phone_index");
@@ -110,6 +114,10 @@ public class phoneServices implements phoneServicesInt {
 
         if(pageNumber<1 || pageSize<1){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Page number/Page Size cannot be less than 1");
+        }
+
+        if(Instant.parse(startTime).isAfter(Instant.parse(endTime))){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start Time cannot be after End Time");
         }
 
 

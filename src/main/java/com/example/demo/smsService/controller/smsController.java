@@ -9,11 +9,13 @@ import com.example.demo.smsService.services.KafkaServices;
 import com.example.demo.smsService.services.phoneServices;
 import com.example.demo.smsService.services.smsServices;
 import com.example.demo.smsService.dto.smsDTO;
+import org.elasticsearch.client.ResponseException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -76,12 +78,20 @@ public class smsController {
 
     @PostMapping("/find_from_sms")
     public List<Map<String, Object>> find(@RequestBody requestType message) throws IOException {
-        return phoneServices.getAllPhoneContainingMessage(message.getMessage(), message.getPageNumber(), message.getPageSize());
 
+        List<Map<String ,Object>> response= phoneServices.getAllPhoneContainingMessage(message.getMessage(), message.getPageNumber(), message.getPageSize());
+        if(response==null){
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT,"No data found");
+        }
+        return response;
     }
 
     @PostMapping("/find_all_sms_from_phone")
     public List<Map<String, Object>> find_phone(@RequestBody requestType message) throws IOException {
-        return phoneServices.getAllPhoneMessage(message.getPhone(), message.getStartime(), message.getEndtime(), message.getPageNumber(), message.getPageSize());
+        List<Map<String ,Object>> response=phoneServices.getAllPhoneMessage(message.getPhone(), message.getStartime(), message.getEndtime(), message.getPageNumber(), message.getPageSize());
+        if(response==null){
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT,"No data found");
+        }
+        return response;
     }
 }

@@ -25,7 +25,7 @@ public class blacklistController {
     }
 
     @PostMapping
-    public ResponseEntity<Map<String,String>> addBlacklist(@RequestBody requestType phoneNumbers) {
+    public ResponseEntity<Map<String,String>> addBlacklist(@RequestBody requestType phoneNumbers) throws ResponseStatusException {
             String regexStr = "^[1-9][0-9]{9}$";
             for(String phoneNumber: phoneNumbers.getBlacklistPhoneNumber()) {
                 if(phoneNumber==null || phoneNumber.isEmpty()){
@@ -46,7 +46,7 @@ public class blacklistController {
     }
 
     @GetMapping
-    public ResponseEntity<Map<String,List<String>>> getBlacklist() {
+    public ResponseEntity<Map<String,List<String>>> getBlacklist() throws ResponseStatusException {
         try{
             List<String>phoneNumbers=blacklistService.findAll();
             Map<String, List<String>> response=new HashMap<>();
@@ -61,8 +61,7 @@ public class blacklistController {
 
 
     @DeleteMapping
-    public ResponseEntity<Map<String,String>> deleteBlacklist(@RequestBody requestType phoneNumbers) {
-        try{
+    public ResponseEntity<Map<String,String>> deleteBlacklist(@RequestBody requestType phoneNumbers) throws ResponseStatusException {
             String regexStr = "^[1-9][0-9]{9}$";
             for(String phoneNumber: phoneNumbers.getBlacklistPhoneNumber()) {
                 if(Pattern.matches(regexStr, phoneNumber)) {
@@ -75,11 +74,6 @@ public class blacklistController {
             Map<String,String> response = new HashMap<>();
             response.put("data", "successfully whitelisted");
             return ResponseEntity.ok(response);
-        }
-        catch(Exception e){
-            logger.error(e.getMessage());
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not delete blacklisted Numbers");
-        }
 
     }
 
